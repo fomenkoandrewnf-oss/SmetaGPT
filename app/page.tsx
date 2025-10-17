@@ -1,103 +1,175 @@
-import Image from "next/image";
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { ArrowRight, CheckCircle, Zap, FileText, TrendingUp } from 'lucide-react'
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white">
+      {/* Header */}
+      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FileText className="w-8 h-8 text-blue-600" />
+            <span className="text-2xl font-bold">SmetaGPT</span>
+          </div>
+          <div className="flex gap-4">
+            <Link href="/dashboard">
+              <Button variant="outline">Войти</Button>
+            </Link>
+            <Link href="/projects/new">
+              <Button>Начать</Button>
+            </Link>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </header>
+      
+      {/* Hero */}
+      <section className="max-w-7xl mx-auto px-6 py-24 text-center">
+        <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          AI-оценщик строительных проектов
+        </h1>
+        <p className="text-xl text-zinc-600 mb-8 max-w-2xl mx-auto">
+          Загрузите дизайн-проект — получите детальную смету за 3 минуты. 
+          Искусственный интеллект анализирует планы и рассчитывает стоимость работ.
+        </p>
+        <div className="flex gap-4 justify-center">
+          <Link href="/projects/new">
+            <Button size="lg" className="gap-2 text-lg px-8 py-6">
+              Создать смету
+              <ArrowRight className="w-5 h-5" />
+            </Button>
+          </Link>
+          <Button size="lg" variant="outline" className="text-lg px-8 py-6">
+            Посмотреть пример
+          </Button>
+        </div>
+      </section>
+      
+      {/* Features */}
+      <section className="max-w-7xl mx-auto px-6 py-24">
+        <h2 className="text-4xl font-bold text-center mb-16">Как это работает</h2>
+        
+        <div className="grid md:grid-cols-3 gap-8">
+          <div className="bg-white p-8 rounded-xl shadow-sm border">
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+              <FileText className="w-6 h-6 text-blue-600" />
+            </div>
+            <h3 className="text-xl font-semibold mb-3">1. Загрузите план</h3>
+            <p className="text-zinc-600">
+              Укажите базовые параметры и загрузите дизайн-проект в PDF, JPG или PNG. 
+              До 5 страниц за раз.
+            </p>
+          </div>
+          
+          <div className="bg-white p-8 rounded-xl shadow-sm border">
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+              <Zap className="w-6 h-6 text-purple-600" />
+            </div>
+            <h3 className="text-xl font-semibold mb-3">2. AI анализирует</h3>
+            <p className="text-zinc-600">
+              Искусственный интеллект извлекает помещения, площади, высоты и 
+              мокрые зоны. Проверяет на расхождения.
+            </p>
+          </div>
+          
+          <div className="bg-white p-8 rounded-xl shadow-sm border">
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+            </div>
+            <h3 className="text-xl font-semibold mb-3">3. Получите смету</h3>
+            <p className="text-zinc-600">
+              Смета по 11 этапам работ готова. Редактируйте цены и количество, 
+              экспортируйте в PDF/XLSX.
+            </p>
+          </div>
+        </div>
+      </section>
+      
+      {/* Benefits */}
+      <section className="bg-blue-50 py-24">
+        <div className="max-w-7xl mx-auto px-6">
+          <h2 className="text-4xl font-bold text-center mb-16">Преимущества</h2>
+          
+          <div className="grid md:grid-cols-2 gap-12">
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-white" />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold mb-2">Быстро</h3>
+                <p className="text-zinc-600">
+                  Смета готова за 3 минуты вместо нескольких часов ручной работы
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-white" />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold mb-2">Точно</h3>
+                <p className="text-zinc-600">
+                  AI извлекает метрики из планов и сверяет с вашими параметрами
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-white" />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold mb-2">Сравнение с рынком</h3>
+                <p className="text-zinc-600">
+                  Проверяйте свои цены с рыночными медианами по региону
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-yellow-600 rounded-full flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold mb-2">Каталоги цен</h3>
+                <p className="text-zinc-600">
+                  Сохраняйте свои расценки и используйте их для новых проектов
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* CTA */}
+      <section className="max-w-7xl mx-auto px-6 py-24 text-center">
+        <h2 className="text-4xl font-bold mb-6">Готовы попробовать?</h2>
+        <p className="text-xl text-zinc-600 mb-8 max-w-2xl mx-auto">
+          Создайте первую смету бесплатно и оцените возможности AI-оценщика
+        </p>
+        <Link href="/projects/new">
+          <Button size="lg" className="gap-2 text-lg px-8 py-6">
+            Начать сейчас
+            <ArrowRight className="w-5 h-5" />
+          </Button>
+        </Link>
+      </section>
+      
+      {/* Footer */}
+      <footer className="border-t bg-zinc-50 py-12">
+        <div className="max-w-7xl mx-auto px-6 text-center text-zinc-600">
+          <p>© 2025 SmetaGPT. Все права защищены.</p>
+        </div>
       </footer>
     </div>
-  );
+  )
 }

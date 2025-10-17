@@ -1,0 +1,278 @@
+// SmetaGPT Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// Пользователи и компании
+// ============================================
+
+model User {
+  id         String    @id @default(cuid())
+  email      String    @unique
+  name       String?
+  companyId  String?   @map("company_id")
+  role       UserRole  @default(MEMBER)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  company    Company?  @relation(fields: [companyId], references: [id])
+  projects   Project[]
+  estimates  Estimate[]
+
+  @@map("users")
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  region    String?
+  logo      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users          User[]
+  projects       Project[]
+  priceCatalogs  PriceCatalog[]
+
+  @@map("companies")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  SMETNIK
+  MEMBER
+}
+
+// ============================================
+// Проекты и входные параметры
+// ============================================
+
+model Project {
+  id                String   @id @default(cuid())
+  userId            String   @map("user_id")
+  companyId         String?  @map("company_id")
+  name              String
+  status            ProjectStatus @default(DRAFT)
+  
+  // Pre-Upload параметры
+  floorAreaM2       Float    @map("floor_area_m2")
+  livingRoomsCount  Int      @map("living_rooms_count")
+  hasKitchenLiving  Boolean  @map("has_kitchen_living")
+  bathroomsCount    Int      @map("bathrooms_count")
+  ceilingHeightM    Float?   @map("ceiling_height_m")
+  
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  user              User     @relation(fields: [userId], references: [id])
+  company           Company? @relation(fields: [companyId], references: [id])
+  
+  files             ProjectFile[]
+  analysis          ProjectAnalysis?
+  rooms             Room[]
+  estimates         Estimate[]
+
+  @@index([userId])
+  @@index([companyId])
+  @@map("projects")
+}
+
+enum ProjectStatus {
+  DRAFT
+  ANALYZING
+  READY
+  ARCHIVED
+}
+
+model ProjectFile {
+  id          String   @id @default(cuid())
+  projectId   String   @map("project_id")
+  storagePath String   @map("storage_path")
+  fileType    String   @map("file_type")
+  fileName    String   @map("file_name")
+  fileSize    Int      @map("file_size")
+  pageCount   Int?     @map("page_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("project_files")
+}
+
+// ============================================
+// AI-анализ и помещения
+// ============================================
+
+model ProjectAnalysis {
+  id              String   @id @default(cuid())
+  projectId       String   @unique @map("project_id")
+  aiModel         String   @map("ai_model")
+  rawJson         Json     @map("raw_json")
+  totalAreaM2     Float?   @map("total_area_m2")
+  ceilingHeightM  Float?   @map("ceiling_height_m")
+  roomsCount      Int?     @map("rooms_count")
+  bathroomsCount  Int?     @map("bathrooms_count")
+  
+  // Санити-чек флаги
+  areaDeviation   Float?   @map("area_deviation")
+  roomsDeviation  Int?     @map("rooms_deviation")
+  bathroomsDeviation Int?  @map("bathrooms_deviation")
+  hasWarnings     Boolean  @default(false) @map("has_warnings")
+  
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_analysis")
+}
+
+model Room {
+  id          String   @id @default(cuid())
+  projectId   String   @map("project_id")
+  name        String
+  areaM2      Float    @map("area_m2")
+  perimeterM  Float?   @map("perimeter_m")
+  isWetZone   Boolean  @default(false) @map("is_wet_zone")
+  heightM     Float?   @map("height_m")
+  notes       String?
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("rooms")
+}
+
+// ============================================
+// Каталоги цен
+// ============================================
+
+model PriceCatalog {
+  id          String   @id @default(cuid())
+  companyId   String   @map("company_id")
+  name        String
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  company     Company  @relation(fields: [companyId], references: [id])
+  items       PriceItem[]
+  estimates   Estimate[]
+
+  @@index([companyId])
+  @@map("price_catalogs")
+}
+
+model PriceItem {
+  id          String   @id @default(cuid())
+  catalogId   String   @map("catalog_id")
+  stageCode   String   @map("stage_code")
+  workCode    String   @map("work_code")
+  name        String
+  unit        String
+  basePrice   Float    @map("base_price")
+  coefJson    Json?    @map("coef_json")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  catalog     PriceCatalog @relation(fields: [catalogId], references: [id], onDelete: Cascade)
+
+  @@index([catalogId])
+  @@index([stageCode, workCode])
+  @@map("price_items")
+}
+
+// ============================================
+// Сметы
+// ============================================
+
+model Estimate {
+  id          String   @id @default(cuid())
+  projectId   String   @map("project_id")
+  catalogId   String   @map("catalog_id")
+  version     Int      @default(1)
+  createdById String   @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  catalog     PriceCatalog  @relation(fields: [catalogId], references: [id])
+  createdBy   User          @relation(fields: [createdById], references: [id])
+  
+  items       EstimateItem[]
+
+  @@index([projectId])
+  @@map("estimates")
+}
+
+model EstimateItem {
+  id          String   @id @default(cuid())
+  estimateId  String   @map("estimate_id")
+  stageCode   String   @map("stage_code")
+  workCode    String   @map("work_code")
+  name        String
+  unit        String
+  qty         Float
+  unitPrice   Float    @map("unit_price")
+  total       Float
+  metaJson    Json?    @map("meta_json")
+  
+  estimate    Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+
+  @@index([estimateId])
+  @@index([stageCode])
+  @@map("estimate_items")
+}
+
+// ============================================
+// Рыночные цены
+// ============================================
+
+model MarketPrice {
+  id          String   @id @default(cuid())
+  region      String
+  stageCode   String   @map("stage_code")
+  workCode    String   @map("work_code")
+  unit        String
+  p10         Float
+  p50         Float
+  p90         Float
+  source      String?
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([region, stageCode, workCode])
+  @@index([region])
+  @@map("market_prices")
+}
+
+// ============================================
+// AI логи
+// ============================================
+
+model AiLog {
+  id          String   @id @default(cuid())
+  projectId   String?  @map("project_id")
+  model       String
+  prompt      String   @db.Text
+  response    String   @db.Text
+  costUsd     Float    @map("cost_usd")
+  tokensIn    Int?     @map("tokens_in")
+  tokensOut   Int?     @map("tokens_out")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([projectId])
+  @@map("ai_logs")
+}
+
