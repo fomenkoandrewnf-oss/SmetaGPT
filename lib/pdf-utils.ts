@@ -1,5 +1,6 @@
 import { PDFDocument } from 'pdf-lib'
 import sharp from 'sharp'
+import { PROJECT_FILES_BUCKET, getSignedUrl, getSupabaseServiceRoleClient } from './supabase'
 
 // ============================================
 // Конвертация PDF в изображения для OpenAI Vision
@@ -67,16 +68,21 @@ export async function uploadToStorageAndGetUrl(
   path: string,
   contentType: string = 'image/jpeg'
 ): Promise<string> {
-  // Здесь будет интеграция с Supabase Storage
-  // Возвращаем временный публичный URL для Vision API
-  
-  // TODO: Реализовать загрузку в Supabase
-  // const { data, error } = await supabase.storage
-  //   .from('project-files')
-  //   .upload(path, buffer, { contentType })
-  
-  // Для MVP - заглушка
-  return `https://storage.supabase.co/placeholder/${path}`
+  const storage = getSupabaseServiceRoleClient()
+
+  const { error: uploadError } = await storage
+    .from(PROJECT_FILES_BUCKET)
+    .upload(path, buffer, {
+      contentType,
+      cacheControl: '3600',
+      upsert: true
+    })
+
+  if (uploadError) {
+    throw new Error(`Не удалось загрузить файл в Supabase Storage: ${uploadError.message}`)
+  }
+
+  return await getSignedUrl(path)
 }
 
 // ============================================
@@ -87,12 +93,7 @@ export async function generateSignedUrl(
   storagePath: string,
   expiresInSeconds: number = 600 // 10 минут
 ): Promise<string> {
-  // TODO: Реализовать генерацию подписанного URL через Supabase
-  // const { data, error } = await supabase.storage
-  //   .from('project-files')
-  //   .createSignedUrl(storagePath, expiresInSeconds)
-  
-  return `https://storage.supabase.co/signed/${storagePath}?expires=${expiresInSeconds}`
+  return await getSignedUrl(storagePath, expiresInSeconds)
 }
 
 // ============================================
