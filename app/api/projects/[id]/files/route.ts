@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { validateUploadedFile } from '@/lib/pdf-utils'
+import { isSupabaseStorageConfigured, uploadProjectFile } from '@/lib/supabase'
 
 // POST /api/projects/:id/files - Загрузить файл
 export async function POST(
@@ -30,12 +31,31 @@ export async function POST(
       )
     }
     
-    // TODO: Загрузить в Supabase Storage
-    // const storagePath = `projects/${params.id}/${Date.now()}-${file.name}`
-    // await uploadToStorage(buffer, storagePath, validation.mimeType!)
-    
-    // Для MVP сохраняем локально или mock
-    const storagePath = `mock/${params.id}/${file.name}`
+    if (!isSupabaseStorageConfigured) {
+      return NextResponse.json(
+        { error: 'Supabase Storage не настроен' },
+        { status: 500 }
+      )
+    }
+
+    let storagePath: string
+
+    try {
+      const uploadResult = await uploadProjectFile(
+        params.id,
+        buffer,
+        file.name,
+        validation.mimeType!
+      )
+
+      storagePath = uploadResult.path
+    } catch (error) {
+      console.error('Ошибка сохранения файла в Supabase Storage:', error)
+      return NextResponse.json(
+        { error: 'Не удалось сохранить файл в Supabase Storage' },
+        { status: 500 }
+      )
+    }
     
     // Сохраняем в БД
     const projectFile = await prisma.projectFile.create({
